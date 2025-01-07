@@ -6,13 +6,17 @@ Data transfer via WebSocket
 ├── LICENSE
 ├── README.md
 ├── apps
-│ ├── go-client
-│ ├── python-client
-│ ├── backend
-│ └── frontend
-│   ├── react
-│   └── vue 
-└── docs
+│   ├── go-client
+│   └── python-client
+├── backend
+│   └── app
+│       └── api
+├── docs
+└── frontend
+    ├── react
+    │   └── src
+    └── vue
+        └── src
 
 ```
 
