@@ -6,14 +6,14 @@ Data transfer via WebSocket
 ├── LICENSE
 ├── README.md
 ├── apps
-    ├── go-client
-    └── python-client
-├── backend
-    └── app
-├── docs
-└── frontend
-    ├── react
-    └── vue 
+│ ├── go-client
+│ ├── python-client
+│ ├── backend
+│ └── frontend
+│   ├── react
+│   └── vue 
+└── docs
+
 ```
 
 # 시작하기
