@@ -26,11 +26,19 @@ cd backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python main.py
+ENV=dev python main.py
 
 ```
 ## 클라이언트
-```
+```bash
+cd apps
+cd python-client
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+cd example_simple
+ENV=dev python main.py
+
 ```
 ## 프론트엔드
 ``` bash

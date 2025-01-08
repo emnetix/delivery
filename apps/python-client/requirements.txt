@@ -1,0 +1,4 @@
+aiohttp
+python-engineio
+python-socketio
+websockets
