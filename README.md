@@ -9,8 +9,7 @@ Data transfer via WebSocket
 │   ├── go-client
 │   └── python-client
 ├── backend
-│   └── app
-│       └── api
+│   └── api
 ├── docs
 └── frontend
     ├── react
@@ -22,7 +21,13 @@ Data transfer via WebSocket
 
 # 시작하기
 ## 백엔드
-```
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
+
 ```
 ## 클라이언트
 ```
