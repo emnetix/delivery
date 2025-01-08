@@ -29,9 +29,9 @@ Data transfer via WebSocket
 ```
 ## 프론트엔드
 ``` bash
-cd frontend/react # or frontend/vue
+cd frontend/react # OR frontend/vue
 npm install
-npm dev
+npm run dev
 ```
 
 
