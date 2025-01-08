@@ -19,27 +19,25 @@ lm = LM()
 
 app = FastAPI()
 
-# CORS 미들웨어 설정
+# CORS middleware settings
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=["http://localhost:8080", "https://yourfrontend.com"],  # 프론트엔드 도메인
     allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # 모든 HTTP 메소드 허용
-    allow_headers=["*"],  # 모든 HTTP 헤더 허용
-    # allow_websockets=True,  # 웹소켓 허용 추가
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all HTTP headers
 )
 
 env = os.environ.get('ENV', 'dev')
 if env == 'dev':
     BASE_DIR = Path(__file__).resolve().parent.parent
-    STATIC_DIR = BASE_DIR / "delivery_frontend/dist-pro"
+    STATIC_DIR = BASE_DIR / "frontend/dist-pro"
 elif env == 'test':
     BASE_DIR = Path(__file__).resolve().parent.parent
-    STATIC_DIR = BASE_DIR / "delivery_frontend/dist-pro"
+    STATIC_DIR = BASE_DIR / "frontend/dist-pro"
 elif env == 'prod':
     BASE_DIR = Path('/work')
-    STATIC_DIR = BASE_DIR / "delivery_frontend/dist-pro"
+    STATIC_DIR = BASE_DIR / "frontend/dist-pro"
 
 print(f"env: {env}")
 print(f"BASE_DIR: {BASE_DIR}")
@@ -48,10 +46,10 @@ logging.info(f"BASE_DIR: {BASE_DIR}")
 logging.info(f"STATIC_DIR: {STATIC_DIR}")
 
 app.mount(WEBSOCKET_PATH, v1_ws_ent02delivery)
-# WebSocket catch-all route 추가
+# Add WebSocket catch-all route
 @app.websocket("/{path:path}")
 async def catch_all_websocket(websocket: WebSocket, path: str):
-    await websocket.close(code=1000)  # 정상적으로 연결 종료
+    await websocket.close(code=1000)  # Normal connection closure
 
 app.include_router(v1_routers, prefix='/api/v1')
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
@@ -68,20 +66,14 @@ def run_server():
         "log_level": "info"
     }
 
-    # 개발 환경일 경우 리로드 설정을 추가합니다.
     if env.lower() == "dev":
-        # config_settings.update({
-        #     "reload": True,
-        #     # "reload_dirs": ["./backend/"]
-        #     "reload_dirs": ["/home/frog/emnetix/apps/backend"]
-        # })
-        # print("개발 모드: 리로드 활성화")
+        # Development mode settings
         pass
     else:
-        print(f"현재 환경: {env}, 리로드 비활성화")
+        print(f"Current environment: {env}, reload disabled")
 
-    print(f"현재 실행 위치: {os.getcwd()}")
-    logging.info(f"현재 실행 위치: {os.getcwd()}")
+    print(f"Current working directory: {os.getcwd()}")
+    logging.info(f"Current working directory: {os.getcwd()}")
 
     print(f"config_settings: {config_settings}")
 
@@ -97,7 +89,7 @@ def start_server():
         thread = threading.Thread(target=run_server)
         thread.start()
         logging.info("FastAPI server started")
-        lm.로그_추가(LogInfo(
+        lm.add_log(LogInfo(
             level="INFO", service=LM.SERVICE_APP,
             message="FastAPI server started",
         ))
@@ -109,7 +101,7 @@ def stop_server():
         server = None
         logging.info("FastAPI server stopped")
 
-        lm.로그_추가(LogInfo(
+        lm.add_log(LogInfo(
             level="INFO", service=LM.SERVICE_APP,
             message="FastAPI server stopped",
         ))

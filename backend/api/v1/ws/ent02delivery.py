@@ -12,7 +12,7 @@ dcm = DCM()
 sio = socketio.AsyncServer(async_mode='asgi', cors_allowed_origins='*')
 dcm.set_sio(sio)
 
-# WebSocket 경로 상수 정의
+# WebSocket path constant
 WEBSOCKET_PATH = '/api/v1/ws/ent02delivery'
 
 @sio.event
@@ -44,13 +44,13 @@ async def setId(sid, data_str):
         if 'id' in data:
             id = data['id']
             await dcm.set_websocket_id(sid, id)
-            await dcm.set_device_info(sid, {})
+            await dcm.set_websocket_device_info(sid, {})
 
     except json.JSONDecodeError:
-        print(f"JSON Format Error: {data_str} is not valid JSON")
+        print(f"JSON format error: {data_str} is not valid JSON")
         lm.add_log(LogInfo(
             level="ERROR", service=LM.SERVICE_DELIVERY,
-            message=f"JSON Format Error: {data_str} is not valid JSON",
+            message=f"JSON format error: {data_str} is not valid JSON",
         ))
 
 @sio.on('delivery')
@@ -62,7 +62,7 @@ async def delivery(sid, data_str):
     ))
     try:
         data = json.loads(data_str)
-        # from 필드 검증
+        # Ignore if 'from' field is missing
         if 'from' not in data:
             print(f"Missing 'from' field: {data_str}")
             lm.add_log(LogInfo(
@@ -71,7 +71,7 @@ async def delivery(sid, data_str):
             ))
             return
 
-        # to, payload 필드 검증
+        # Check if 'to' and 'payload' fields exist
         if 'to' not in data or 'payload' not in data:
             print(f"Missing 'to' or 'payload' field: {data_str}")
             lm.add_log(LogInfo(
@@ -88,13 +88,13 @@ async def delivery(sid, data_str):
         
         target_sid = dcm.find_sid_by_id(data['to'])
         if target_sid is None:
-            print(f"Target ID [{data['to']}] not found: {data_str}")
+            print(f"Target id [{data['to']}] not found: {data_str}")
             lm.add_log(LogInfo(
                 level="ERROR", service=LM.SERVICE_DELIVERY,
-                message=f"Target ID [{data['to']}] not found: {data_str}",
+                message=f"Target id [{data['to']}] not found: {data_str}",
             ))
             error_data = {
-                'message': f'Target ID [{data["to"]}] not found',
+                'message': f'Target id [{data["to"]}] not found',
                 'from': data['from'],
                 'to': data['from'],
             }
@@ -104,10 +104,10 @@ async def delivery(sid, data_str):
         await sio.emit('delivery', data, room=target_sid)
         
     except json.JSONDecodeError:
-        print(f"JSON Format Error: {data_str} is not valid JSON")
+        print(f"JSON format error: {data_str} is not valid JSON")
         lm.add_log(LogInfo(
             level="ERROR", service=LM.SERVICE_DELIVERY,
-            message=f"JSON Format Error: {data_str} is not valid JSON",
+            message=f"JSON format error: {data_str} is not valid JSON",
         ))
 
 socket_app = socketio.ASGIApp(sio, socketio_path=WEBSOCKET_PATH)

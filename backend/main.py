@@ -12,7 +12,6 @@ from ent.log_manager import LogManager as LM
 from ent.log_manager import LogInfo
 lm = LM()
 
-# Logging configuration
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -30,19 +29,19 @@ def server_lifecycle():
         start_server()
         yield
     finally:
-        logger.info("Shutting down delivery server...")
+        logger.info("Stopping delivery server...")
         lm.add_log(LogInfo(
             level="INFO", service=LM.SERVICE_APP,
-            message="Shutting down delivery server...",
+            message="Stopping delivery server...",
         ))
         stop_server()
         time.sleep(1)
 
 def signal_handler(signum, frame):
-    logger.info(f"Received signal {signum}. Shutting down delivery server...")
+    logger.info(f"Received signal {signum}. Stopping delivery server...")
     lm.add_log(LogInfo(
         level="INFO", service=LM.SERVICE_APP,
-        message=f"Received signal {signum}. Shutting down delivery server...",
+        message=f"Received signal {signum}. Stopping delivery server...",
     ))
     raise KeyboardInterrupt
 
@@ -54,7 +53,7 @@ if __name__ == "__main__":
             while True:
                 time.sleep(1)
         except KeyboardInterrupt:
-            logger.info("Program terminated normally due to keyboard interrupt.")
+            logger.info("Program terminating normally due to keyboard interrupt.")
             lm.add_log(LogInfo(
                 level="INFO", service=LM.SERVICE_APP,
                 message="Delivery server shutting down normally due to keyboard interrupt...",

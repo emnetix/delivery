@@ -6,18 +6,12 @@ router = APIRouter()
 # @inject
 
 SUCCESS_CODE = 0
-UNAUTHORIZED_CODE = 401
 
 @router.get("/user/loginOut")
-async def logout():
-    """
-    Endpoint for user logout
-    Returns:
-        dict: Response indicating successful logout
-    """
+async def user_logout():
     try:
         env = os.environ.get('ENV', 'dev')
-        return {
+        return { 
             'code': SUCCESS_CODE,
             'data': None
         }
@@ -27,19 +21,11 @@ async def logout():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/user/login")
-async def login(username: str = Body(...), password: str = Body(...)):
-    """
-    Endpoint for user authentication
-    Args:
-        username: User's username
-        password: User's password
-    Returns:
-        dict: User data if authentication successful, error message if not
-    """
+async def user_login(username: str = Body(...), password: str = Body(...)):
     try:
         env = os.environ.get('ENV', 'dev')
         if username == 'admin' and password == 'ehsqjfwk9414two':
-            return {
+            return { 
                 'code': SUCCESS_CODE,
                 'data': {
                     'username': 'admin',
@@ -50,8 +36,8 @@ async def login(username: str = Body(...), password: str = Body(...)):
                 },
             }
         else:
-            return {
-                'code': UNAUTHORIZED_CODE,
+            return { 
+                'code': 401,
                 'message': 'Invalid username or password',
             }
         
