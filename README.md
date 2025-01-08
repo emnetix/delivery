@@ -6,13 +6,17 @@ Data transfer via WebSocket
 ├── LICENSE
 ├── README.md
 ├── apps
-│ ├── go-client
-│ ├── python-client
-│ ├── backend
-│ └── frontend
-│   ├── react
-│   └── vue 
-└── docs
+│   ├── go-client
+│   └── python-client
+├── backend
+│   └── app
+│       └── api
+├── docs
+└── frontend
+    ├── react
+    │   └── src
+    └── vue
+        └── src
 
 ```
 
@@ -25,9 +29,9 @@ Data transfer via WebSocket
 ```
 ## 프론트엔드
 ``` bash
-cd frontend/react # or frontend/vue
+cd frontend/react # OR frontend/vue
 npm install
-npm dev
+npm run dev
 ```
 
 
