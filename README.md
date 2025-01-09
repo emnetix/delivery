@@ -40,6 +40,14 @@ cd example_simple
 ENV=dev python main.py
 
 ```
+
+```bash
+cd apps
+cd go-client
+go mod init delivery
+go mod tidy
+
+```
 ## 프론트엔드
 ``` bash
 cd frontend/react # OR frontend/vue

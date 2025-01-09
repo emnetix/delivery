@@ -15,7 +15,11 @@ class ENT02DeliveryAsync:
         # Socket.IO 설정
         self.sio = socketio.AsyncClient()
         self.ws_protocol = 'wss' if isProd else 'ws'
-        self.socket_url = "wss://delivery.emnetix.net"
+        if isProd :
+            self.socket_url =  f"{self.ws_protocol}://delivery.emnetix.net"
+        else:
+            self.socket_url =  f"{self.ws_protocol}://localhost:8000"
+        
         self.socket_path = '/api/v1/ws/ent02delivery'
 
         # 콜백을 빈 비동기 함수로 초기화

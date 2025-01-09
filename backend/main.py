@@ -1,3 +1,4 @@
+from fastapi_server import app 
 from fastapi import FastAPI
 import uvicorn
 import threading
