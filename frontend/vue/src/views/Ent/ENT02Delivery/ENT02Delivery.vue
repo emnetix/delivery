@@ -151,11 +151,13 @@ const printToTerminal = (
   }
 
   const colorCode = colorCodes[color] || colorCodes.white
-
+  console.log('[PRINT_TO_TERMINAL]', data);
   if (typeof data === 'string') {
     terminal.value?.writeln(`\x1b[${colorCode}m${prefix}${data}\x1b[0m`)
     return
   }
+  console.log('[PRINT_TO_TERMINAL] AFTER STRING');
+
 
   const hexData = Array.from(data).map((byte) => byte.toString(16).padStart(2, '0').toUpperCase())
 
