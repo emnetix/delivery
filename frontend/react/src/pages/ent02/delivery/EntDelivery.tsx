@@ -5,7 +5,7 @@ import LinkOffIcon from '@mui/icons-material/LinkOff'
 import { FC, useEffect, useMemo, useState } from "react";
 import { v4 as uuid } from 'uuid'
 import { SOCKET_ENT, useSocket } from "../../../common/util/socket/socket.util";
-import { useXTerm } from 'react-xtermjs'
+import { useXTerm, UseXTermProps } from 'react-xtermjs'
 import { usePrevious } from "../../../common/util/hooks/usePrevious.util";
 
 
@@ -71,7 +71,7 @@ const XTERM_OPTIONS = {
   fontSize: 14,
   cols: 100,
   rows: 23,
-} as const;
+} as UseXTermProps['options'];
 
 const EntDelivery: FC = () => {
   const [deviceId, setDeviceId] = useState<string|null>(null);
@@ -100,7 +100,7 @@ const EntDelivery: FC = () => {
 
   useOn(SOCKET_ENT.ON_DELIVERY, msg => {
     setBufferMsg(old => [...old, {
-      prefix: '<< 수신된 데이터 :\r\n',
+      prefix: '<< 수신 데이터 :\r\n',
       color: 'cyan',
       message: JSON.stringify(msg, null, 2)
     }]);
@@ -117,7 +117,7 @@ const EntDelivery: FC = () => {
     const { path, data } = SOCKET_ENT.SEND_DATA(deviceId, targetId, JSON.parse(content))
     socket.emit(path, JSON.stringify(data));
     setBufferMsg(old => [...old, {
-      prefix: '>> 송신한 데이터 :\r\n',
+      prefix: '>> 송신 데이터 :\r\n',
       color: 'green',
       message: JSON.stringify(data, null, 2), 
     }])
@@ -158,7 +158,7 @@ const EntDelivery: FC = () => {
       const msgss = [...bufferMsg];
       if (prevIsConnected)
           msgss.push('연결 끊김');
-      msgss.push('디바이 고유키 초기화');
+      msgss.push('디바이스 고유키 초기화');
       setBufferMsg(msgss);
       setDeviceId(uuid());
     }
@@ -184,7 +184,9 @@ const EntDelivery: FC = () => {
         <CopyIcon />
       </IconButton>
     </Box>  
-    <div id="myXterm" ref={xtermRef}/>
+    <StyledTerminalWrap>
+      <div id="myXterm" ref={xtermRef} />
+    </StyledTerminalWrap>
     <StyledEnditor >
       <StyledPaper>
         <TextField value={content} onChange={evt => setContent(evt.target.value)} 
@@ -211,13 +213,19 @@ const StyledPaper = styled(Paper)(({theme}) => ({
     flex: 1
   }
 }))
+const StyledTerminalWrap = styled(Box)(({theme}) => ({
+  padding: theme.spacing(1),
+  '& .terminal': {
+    padding: theme.spacing(1)
+  }
+}))
 
-const StyledBox = styled(Box)({
+const StyledBox = styled(Box)(({theme}) => ({
   
   '& > .title-box': {
     display: 'flex',
     alignItems: 'center',
-    padding: '8px',
+    padding: theme.spacing(1),
 
     '& svg': {
       width: '16px'
@@ -235,7 +243,7 @@ const StyledBox = styled(Box)({
       // }
     }
   }
-})
+}))
 
 const StyledEnditor = styled(Box)(() => ({
   display: 'flex',
