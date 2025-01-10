@@ -85,7 +85,6 @@ const EntDelivery: FC = () => {
     options: XTERM_OPTIONS
   });
   const [bufferMsg, setBufferMsg] = useState<Array<MessageBuffer>>([]);
-  
   const [content, setContent] = useState('');
   const [targetId, setTargetId] = useState('');
 
@@ -98,20 +97,6 @@ const EntDelivery: FC = () => {
     }
   }, [status, content, targetId])
 
-  useOn(SOCKET_ENT.ON_DELIVERY, msg => {
-    setBufferMsg(old => [...old, {
-      prefix: '<< 수신 데이터 :\r\n',
-      color: 'cyan',
-      message: JSON.stringify(msg, null, 2)
-    }]);
-  })
-
-  
-  const copyMyId = () => {
-    if (!deviceId) return;
-    navigator.clipboard.writeText(deviceId);
-
-  }
   const submit = () => {
     if (!deviceId) return;
     const { path, data } = SOCKET_ENT.SEND_DATA(deviceId, targetId, JSON.parse(content))
@@ -121,6 +106,11 @@ const EntDelivery: FC = () => {
       color: 'green',
       message: JSON.stringify(data, null, 2), 
     }])
+  }
+  const copyMyId = () => {
+    if (!deviceId) return;
+    navigator.clipboard.writeText(deviceId);
+
   }
   const clearTerminal = () => xterm?.clear();
   const sampleJson = () => {
@@ -135,6 +125,13 @@ const EntDelivery: FC = () => {
     setContent(JSON.stringify(data, null, 2))
   }
 
+  useOn(SOCKET_ENT.ON_DELIVERY, msg => {
+    setBufferMsg(old => [...old, {
+      prefix: '<< 수신 데이터 :\r\n',
+      color: 'cyan',
+      message: JSON.stringify(msg, null, 2)
+    }]);
+  })
 
   useEffect(() => {
     if (!xterm || !bufferMsg.length) return;
@@ -166,7 +163,6 @@ const EntDelivery: FC = () => {
 
   useEffect(() => {
     init();
-
     return release;
   }, [])
 
