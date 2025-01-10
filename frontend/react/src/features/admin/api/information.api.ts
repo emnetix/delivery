@@ -1,9 +1,12 @@
-import { useQuery } from "@tanstack/react-query"
+import { UndefinedInitialDataOptions, useQuery } from "@tanstack/react-query"
 import { BaseAxios } from "../../../common/util/api/axios.util"
 
+type UseQueryOptions = Omit<UndefinedInitialDataOptions, 'queryKey' | 'queryFn'>
 
 // 최대 로그 수를 상수로 정의
 const MAX_LOGS = 100
+
+
 
 // // 최대 데이터 포인트 수를 360개로 설정
 // const MAX_DATA_POINTS = 360
@@ -36,9 +39,9 @@ export const getLogs = ({ after }: GetLogsParam = {}) => BaseAxios.get('/api/v1/
     const { status, data } = res;
     if (status === 200) {
       const { first_log_timestamp, last_log_timestamp } = data.log_info
-      data.log_info.first_log_timestamp = new Date(first_log_timestamp);
-      data.log_info.last_log_timestamp = new Date(last_log_timestamp);
-      data.logs = (data.logs as Array<Log>).map(({timestamp, ...other}) => ({...other, timestamp: new Date(timestamp)}))
+      data.log_info.first_log_timestamp = new Date(`${first_log_timestamp}Z`);
+      data.log_info.last_log_timestamp = new Date(`${last_log_timestamp}Z`);
+      data.logs = (data.logs as Array<Log>).map(({timestamp, ...other}) => ({...other, timestamp: new Date(`${timestamp}Z`)}))
       const { status: _, ...other } = data;
       return other;
     } else {
@@ -77,7 +80,7 @@ export const getIds = ({ page = 1, pageSize = 10 }: GetIdsParam = {}) => {
       return {
         list: (ids as Array<IdInfo>).map(({lastAccessTime, ...other}) => ({
           ...other,
-          lastAccessTime: new Date(lastAccessTime)
+          lastAccessTime: new Date(lastAccessTime),
         })),
         pagination
       }
@@ -100,7 +103,7 @@ export const getStats = () => BaseAxios.get('/api/v1/ent02delivery/admin/stats')
       const { stats } = data;
       const { last_updated, ...other } = stats;
       return {
-        last_updated: new Date(last_updated),
+        last_updated: new Date(`${last_updated}Z`),
         ...other
       }
     } else {
@@ -122,3 +125,11 @@ export const useQueryIds = (param: GetIdsParam) => {
     queryFn: () => getIds(param),
   })
 } 
+
+export const useQueryStats = (option?:UseQueryOptions) => {
+  return useQuery({
+    ...option,
+    queryKey: ADMIN_QUERY_KEY.stats(),
+    queryFn: () => getStats()
+  } as UndefinedInitialDataOptions<Stats>)
+}
