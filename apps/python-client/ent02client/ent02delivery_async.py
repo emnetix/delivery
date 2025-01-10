@@ -16,7 +16,7 @@ class ENT02DeliveryAsync:
         self.sio = socketio.AsyncClient()
         self.ws_protocol = 'wss' if isProd else 'ws'
         if isProd :
-            self.socket_url =  f"{self.ws_protocol}://delivery.emnetix.net"
+            self.socket_url =  f"{self.ws_protocol}://test-delivery.emnetix.net"
         else:
             self.socket_url =  f"{self.ws_protocol}://localhost:8000"
         

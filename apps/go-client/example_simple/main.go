@@ -73,6 +73,7 @@ func sendPeriodicMessage(done chan bool) {
 }
 
 func main() {
+
 	deliveryClient = delivery.NewENT02DeliveryAsync()
 
 	// Set event handlers
@@ -111,6 +112,14 @@ func main() {
 
 	// Start periodic message sending
 	go sendPeriodicMessage(done)
+
+	defer func() {
+		done <- true
+		close(done)
+		if deliveryClient != nil {
+			deliveryClient.Close() // 연결 종료 메서드 추가 필요
+		}
+	}()
 
 	// Wait for interrupt signal
 	<-sigChan
