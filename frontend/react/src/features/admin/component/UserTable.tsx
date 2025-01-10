@@ -5,7 +5,7 @@ import { useQueryIds } from "../api/information.api";
 
 const UserTable: FC = () => {
   const [page, setPage] = useState(1);
-  const { data } = useQueryIds({page});
+  const { data } = useQueryIds({page}, { refetchInterval: 5000});
 
   const onChangePage = (_event: ChangeEvent<unknown>, val: number) => setPage(val);
 
