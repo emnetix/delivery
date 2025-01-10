@@ -54,8 +54,17 @@ ENV=dev go run main.go
 ## 프론트엔드
 ``` bash
 cd frontend/react # OR frontend/vue
-npm install
+npm i install
 npm run dev
+```
+### 의존성 설치
+``` shell
+npm i # 의존성 설치
+```
+
+### 빌드
+``` shell
+npm run build # OUT -> ../dist-pro
 ```
 
 

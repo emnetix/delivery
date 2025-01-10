@@ -12,7 +12,7 @@ npm run dev
 ```
 ## 빌드
 ``` shell
-npm run build # OUT -> ./dist
+npm run build # OUT -> ../dist-pro
 ```
 
 
