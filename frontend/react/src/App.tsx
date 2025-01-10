@@ -8,6 +8,7 @@ import Home from './pages/Home';
 import Info from './pages/Home copy';
 import About from './pages/About';
 import EntDelivery from './pages/ent02/delivery/EntDelivery';
+import DeliveryAdmin from './pages/ent02/delivery/Admin';
 
 export default function App() {
   const loc = useLocation();
@@ -32,6 +33,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/ent02/delivery" element={<EntDelivery />} />
+          <Route path="/ent02/delivery/admin" element={<DeliveryAdmin />} />
           <Route path="/info" element={<Info />} />
           <Route path="/About" element={<About />} />
         </Routes>
