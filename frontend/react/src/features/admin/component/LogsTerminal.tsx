@@ -78,9 +78,6 @@ const LogsTerminal: FC = () => {
     if (active) refetch();
   }, [active])
 
-  useEffect(() => {
-    console.log(lastDate);
-  }, [lastDate])
   return <StyledLogsTerminal>
     <div ref={ref} />
     <div className="actionBox">
