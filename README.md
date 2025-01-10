@@ -30,6 +30,7 @@ ENV=dev python main.py
 
 ```
 ## 클라이언트
+python
 ```bash
 cd apps
 cd python-client
@@ -41,11 +42,13 @@ ENV=dev python main.py
 
 ```
 
+go
 ```bash
 cd apps
 cd go-client
 go mod init delivery
 go mod tidy
+ENV=dev go run main.go
 
 ```
 ## 프론트엔드

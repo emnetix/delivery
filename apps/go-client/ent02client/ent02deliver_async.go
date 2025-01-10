@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,13 +15,20 @@ import (
 )
 
 type ENT02DeliveryAsync struct {
-	ID         string
-	PeerID     string
+	// 연관된 필드들끼리 그룹화
+	ID     string
+	PeerID string
+
+	// 연결 관련
 	conn       *websocket.Conn
-	done       chan struct{}
-	isProd     bool
 	socketURL  string
 	socketPath string
+	isProd     bool
+
+	// 동기화 관련
+	done       chan struct{}
+	writeMutex sync.Mutex
+	sendChan   chan wsMessage
 
 	// Callback functions
 	OnConnected    func() error
@@ -29,11 +37,24 @@ type ENT02DeliveryAsync struct {
 	OnError        func(data interface{}) error
 }
 
+type messageType int
+
+const (
+	normalMessage messageType = iota
+	heartbeatMessage
+	pongMessage
+)
+
+type wsMessage struct {
+	msgType messageType
+	data    interface{}
+}
+
 func NewENT02DeliveryAsync() *ENT02DeliveryAsync {
 	isProd := os.Getenv("ENV") == "prod"
 
 	protocol := "wss://"
-	host := "delivery.emnetix.net"
+	host := "test-delivery.emnetix.net"
 	if !isProd {
 		protocol = "ws://"
 		host = "localhost:8000"
@@ -44,6 +65,7 @@ func NewENT02DeliveryAsync() *ENT02DeliveryAsync {
 		socketURL:  protocol + host,
 		socketPath: "/api/v1/ws/ent02delivery",
 		done:       make(chan struct{}),
+		sendChan:   make(chan wsMessage, 100),
 	}
 
 	// Initialize default callbacks
@@ -123,6 +145,8 @@ func (d *ENT02DeliveryAsync) ConnectSocket() error {
 	}
 	d.conn = conn
 
+	go d.messageWriter()
+	go d.startHeartbeat()
 	// Send Socket.IO upgrade packet
 	if err := conn.WriteMessage(websocket.TextMessage, []byte("40")); err != nil {
 		return fmt.Errorf("upgrade packet error: %v", err)
@@ -141,24 +165,6 @@ func (d *ENT02DeliveryAsync) ConnectSocket() error {
 			return fmt.Errorf("set-id error: %v", err)
 		}
 	}
-
-	// Start heartbeat goroutine
-	go func() {
-		ticker := time.NewTicker(25 * time.Second)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-d.done:
-				return
-			case <-ticker.C:
-				if err := d.conn.WriteMessage(websocket.TextMessage, []byte("2")); err != nil {
-					d.OnError(fmt.Sprintf("heartbeat error: %v", err))
-					return
-				}
-			}
-		}
-	}()
 
 	go d.handleMessages()
 	d.OnConnected()
@@ -188,7 +194,13 @@ func (d *ENT02DeliveryAsync) handleMessages() {
 
 			switch msgType {
 			case "2": // PING
-				d.conn.WriteMessage(websocket.TextMessage, []byte("3")) // PONG
+				select {
+				case d.sendChan <- wsMessage{msgType: pongMessage}:
+				case <-d.done:
+					return
+				case <-time.After(time.Second):
+					d.OnError("pong send timeout")
+				}
 				continue
 			case "4": // MESSAGE
 
@@ -276,6 +288,59 @@ func (d *ENT02DeliveryAsync) sendMessage(msg interface{}) error {
 	return d.conn.WriteMessage(websocket.TextMessage, []byte(message))
 }
 
+// 메시지 전송을 담당하는 새로운 고루틴
+func (d *ENT02DeliveryAsync) messageWriter() {
+	for {
+		select {
+		case <-d.done:
+			return
+		case msg := <-d.sendChan:
+			d.writeMutex.Lock()
+			var err error
+			switch msg.msgType {
+			case heartbeatMessage:
+				err = d.conn.WriteMessage(websocket.TextMessage, []byte("2"))
+			case pongMessage:
+				err = d.conn.WriteMessage(websocket.TextMessage, []byte("3"))
+			case normalMessage:
+				err = d.sendMessage(msg.data)
+			default:
+				err = fmt.Errorf("unknown message type: %v", msg.msgType)
+			}
+			d.writeMutex.Unlock()
+
+			if err != nil {
+				d.OnError(fmt.Sprintf("send error: %v", err))
+				// 심각한 에러인 경우 연결을 종료하는 것을 고려
+				if websocket.IsUnexpectedCloseError(err) {
+					close(d.done)
+					return
+				}
+			}
+		}
+	}
+}
+
+func (d *ENT02DeliveryAsync) startHeartbeat() {
+	ticker := time.NewTicker(25 * time.Second)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-d.done:
+			return
+		case <-ticker.C:
+			select {
+			case d.sendChan <- wsMessage{msgType: heartbeatMessage}:
+			case <-d.done:
+				return
+			case <-time.After(time.Second):
+				d.OnError("heartbeat send timeout")
+			}
+		}
+	}
+}
+
 func (d *ENT02DeliveryAsync) SendData(data interface{}) error {
 	message := map[string]interface{}{
 		"type":    "delivery",
@@ -284,13 +349,31 @@ func (d *ENT02DeliveryAsync) SendData(data interface{}) error {
 		"payload": data,
 	}
 
-	return d.sendMessage(message)
+	select {
+	case d.sendChan <- wsMessage{msgType: normalMessage, data: message}:
+		return nil
+	case <-d.done:
+		return fmt.Errorf("connection closed")
+	case <-time.After(5 * time.Second):
+		return fmt.Errorf("send timeout")
+	}
 }
 
 func (d *ENT02DeliveryAsync) Close() {
+	d.writeMutex.Lock()
+	defer d.writeMutex.Unlock()
+
 	if d.conn != nil {
-		d.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		// 먼저 done 채널을 닫아서 다른 고루틴들이 종료되도록 함
+		select {
+		case <-d.done:
+		default:
+			close(d.done)
+		}
+
+		// 정상적인 종료 메시지 전송 시도
+		d.conn.WriteMessage(websocket.CloseMessage,
+			websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 		d.conn.Close()
-		<-d.done
 	}
 }
