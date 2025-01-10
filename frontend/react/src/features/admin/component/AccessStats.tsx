@@ -19,10 +19,14 @@ type ChartDataRaw = {
 
 const MAX = 25;
 
-const AccessStats: FC = () => {
+type Props = {
+  refetch: boolean
+}
+
+const AccessStats: FC<Props> = ({refetch}) => {
   // const [enabled] = useState(false);
   const refetchInterval = useMemo(() => 1000, [])
-  const { data: qData } = useQueryStats({ refetchInterval });
+  const { data: qData } = useQueryStats({ refetchInterval, enabled: refetch });
 
   const [bufferDataList, setBufferDataList] = useState<Array<BufferData>>(Array.from({length: MAX}, () => ({ countDevice: 0, countSocket: 0})));
 

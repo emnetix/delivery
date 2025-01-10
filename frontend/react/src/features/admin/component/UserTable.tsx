@@ -2,10 +2,13 @@ import { Box, Pagination, styled, Table, TableBody, TableCell, TableHead, TableR
 import { ChangeEvent, FC, useMemo, useState } from "react";
 import { useQueryIds } from "../api/information.api";
 
+type Props = {
+  refetch: boolean
+}
 
-const UserTable: FC = () => {
+const UserTable: FC<Props> = ({refetch}) => {
   const [page, setPage] = useState(1);
-  const { data } = useQueryIds({page}, { refetchInterval: 5000});
+  const { data } = useQueryIds({page}, { refetchInterval: 5000, enabled: refetch});
 
   const onChangePage = (_event: ChangeEvent<unknown>, val: number) => setPage(val);
 
