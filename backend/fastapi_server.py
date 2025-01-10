@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -16,6 +16,9 @@ from api.v1.ws.ent02delivery import WEBSOCKET_PATH
 from ent.log_manager import LogManager as LM
 from ent.log_manager import LogInfo
 lm = LM()
+import mimetypes
+from fastapi.responses import FileResponse
+
 
 app = FastAPI()
 
@@ -52,7 +55,67 @@ async def catch_all_websocket(websocket: WebSocket, path: str):
     await websocket.close(code=1000)  # Normal connection closure
 
 app.include_router(v1_routers, prefix='/api/v1')
+
+
+# MIME 타입 추가
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('application/javascript', '.mjs')
+mimetypes.add_type('text/css', '.css')
+mimetypes.add_type('image/svg+xml', '.svg')
+
+def get_file_response(file_path: str):
+    """파일 종류에 따른 응답 생성"""
+    if os.path.exists(file_path):
+        # MIME 타입 결정
+        content_type, _ = mimetypes.guess_type(file_path)
+        
+        # 이미지 파일 처리
+        if content_type and content_type.startswith('image/'):
+            return FileResponse(file_path, media_type=content_type)
+            
+        # 폰트 파일 처리
+        if file_path.endswith(('.woff2', '.woff', '.ttf', '.eot')):
+            font_types = {
+                '.woff2': 'font/woff2',
+                '.woff': 'font/woff',
+                '.ttf': 'font/ttf',
+                '.eot': 'application/vnd.ms-fontobject'
+            }
+            extension = os.path.splitext(file_path)[1]
+            return FileResponse(file_path, media_type=font_types.get(extension))
+            
+        # 기타 정적 파일 처리
+        return FileResponse(file_path, media_type=content_type)
+    
+    return None
+
+# assets 폴더 마운트 (js, css, 폰트 등이 포함됨)
+app.mount("/assets", StaticFiles(directory=f"{STATIC_DIR}/assets"), name="assets")
+
+# SPA 라우팅을 위한 폴백 라우트
+@app.get("/{full_path:path}")
+async def serve_spa(full_path: str):
+    # 실제 파일 경로 확인
+    file_path = os.path.join(STATIC_DIR, full_path)
+    print(f"Requested path: {file_path}")
+    
+    # 파일이 존재하는 경우 파일 응답 생성
+    if os.path.exists(file_path) and not os.path.isdir(file_path):
+        response = get_file_response(file_path)
+        if response:
+            return response
+    
+    # SPA 라우팅을 위한 index.html 반환
+    index_path = os.path.join(STATIC_DIR, "index.html")
+    if os.path.exists(index_path):
+        return FileResponse(index_path)
+    
+    raise HTTPException(status_code=404, detail="File not found")
+
+# dist 루트의 정적 파일들을 위한 마운트 (이미지 등)
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
+
+
 
 server = None
 
