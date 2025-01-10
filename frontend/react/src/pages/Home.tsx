@@ -10,12 +10,15 @@ const Home: FC = () => {
   const goTestPage = () => {
     navi('/ent02/delivery')
   }
+  const goAdminPage = () => {
+    navi('/ent02/delivery/admin')
+  }
 
   return <StyledWrapp>
     <StyledItem bgcolor="primary.dark">
     </StyledItem>
     <StyledItem>
-      <Button variant="contained">Admin</Button>
+      <Button variant="contained" onClick={goAdminPage}>Admin</Button>
       <Button variant="contained" onClick={goTestPage}>Test</Button>
       <Button variant="contained">FaLinux</Button>
     </StyledItem>
