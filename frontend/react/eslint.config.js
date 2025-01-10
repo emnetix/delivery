@@ -23,6 +23,14 @@ export default tseslint.config(
         'warn',
         { allowConstantExport: true },
       ],
+      'no-underscore-dangle': 'off',  // 밑줄 변수 허용
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { 
+          argsIgnorePattern: '^_',  // _ 로 시작하는 매개변수 무시
+          varsIgnorePattern: '^_',   // _ 로 시작하는 변수 무시
+        }
+      ],
     },
   },
 )
