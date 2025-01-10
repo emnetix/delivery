@@ -48,7 +48,7 @@ export const getLogs = ({ after }: GetLogsParam = {}) => BaseAxios.get('/api/v1/
       throw new Error(`Status Is Not 200 ${res.status}`)
     }
   })
-// /api/v1/ent02delivery/admin/ids?
+  
 
 type GetIdsParam = Partial<{
   page: number
@@ -115,15 +115,17 @@ export const getStats = () => BaseAxios.get('/api/v1/ent02delivery/admin/stats')
 const ADMIN_QUERY_ROOT = 'ADMIN'
 export const ADMIN_QUERY_KEY = {
   ids: (param: GetIdsParam) => [ADMIN_QUERY_ROOT, 'IDS', param],
-  stats: () => [ADMIN_QUERY_ROOT, 'STATS']
+  stats: () => [ADMIN_QUERY_ROOT, 'STATS'],
+  logs: (param: GetLogsParam) => [ADMIN_QUERY_ROOT, 'LOGS', param],
 }
 
-export const useQueryIds = (param: GetIdsParam) => {
+export const useQueryIds = (param: GetIdsParam, option?: UseQueryOptions) => {
 
   return useQuery({
+    ...option,
     queryKey: ADMIN_QUERY_KEY.ids(param),
     queryFn: () => getIds(param),
-  })
+  } as UndefinedInitialDataOptions<Pagination<IdInfo>>)
 } 
 
 export const useQueryStats = (option?:UseQueryOptions) => {
@@ -132,4 +134,12 @@ export const useQueryStats = (option?:UseQueryOptions) => {
     queryKey: ADMIN_QUERY_KEY.stats(),
     queryFn: () => getStats()
   } as UndefinedInitialDataOptions<Stats>)
+}
+
+export const useQueryLogs = (param: GetLogsParam, option?: UseQueryOptions) => {
+  return useQuery({
+    ...option,
+    queryKey: ADMIN_QUERY_KEY.logs(param),
+    queryFn: () => getLogs(param)
+  } as UndefinedInitialDataOptions<AdminLogs>)
 }
