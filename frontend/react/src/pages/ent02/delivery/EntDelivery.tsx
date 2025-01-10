@@ -1,17 +1,34 @@
-import { Box, CircularProgress, IconButton, styled, Typography, TextField, Button, Paper  } from "@mui/material";
+import { Box, CircularProgress, IconButton, styled, Typography, TextField, Button, Paper, FormControlLabel, Checkbox  } from "@mui/material";
 import CopyIcon from '@mui/icons-material/ContentCopy'
 import LinkIcon from '@mui/icons-material/Link'
 import LinkOffIcon from '@mui/icons-material/LinkOff'
-import { FC, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FC, useEffect, useMemo, useRef, useState } from "react";
 import { v4 as uuid } from 'uuid'
 import { SOCKET_ENT, useSocket } from "../../../common/util/socket/socket.util";
 import { useXTerm } from 'react-xtermjs'
 import { usePrevious } from "../../../common/util/hooks/usePrevious.util";
 import { MessageBuffer, printToTerminal, XTERM_OPTIONS } from "../../../features/xterm/logic/xterm.logic";
 
+type SocketData = {
+  from: string,
+  to: string,
+  payload: {
+    timestamp: string,
+    device: {
+      id: string,
+      status: string
+    },
+    message: string
+  }
+}
 
 const EntDelivery: FC = () => {
   const [deviceId, setDeviceId] = useState<string|null>(null);
+  const [content, setContent] = useState('');
+  const [targetId, setTargetId] = useState('');
+  const [autoSend, setAutoSend] = useState(false);
+
+  const [intervalKey, setIntervalKey] = useState<number|null>(null);
 
   const { socket, init, status, release, useOn } = useSocket();
 
@@ -22,8 +39,7 @@ const EntDelivery: FC = () => {
     options: XTERM_OPTIONS
   });
   const [bufferMsg, setBufferMsg] = useState<Array<MessageBuffer>>([]);
-  const [content, setContent] = useState('');
-  const [targetId, setTargetId] = useState('');
+  
 
   const disabledSubmit = useMemo(() => {
     if (!status || !content || !targetId) return true;
@@ -33,6 +49,15 @@ const EntDelivery: FC = () => {
       return true
     }
   }, [status, content, targetId])
+
+  const allowSend = useRef(!disabledSubmit);
+  useEffect(() => {
+    allowSend.current = !disabledSubmit;
+  }, [disabledSubmit])
+
+  const onAutoSend = (event: ChangeEvent<HTMLInputElement>) => {
+    setAutoSend(event.target.checked);
+  }
 
   const submit = () => {
     if (!deviceId) return;
@@ -51,6 +76,8 @@ const EntDelivery: FC = () => {
   }
   const clearTerminal = () => xterm?.clear();
   const sampleJson = () => {
+    if (!deviceId) return;
+
     const data = {
       timestamp: new Date().toISOString(),
       device: {
@@ -63,6 +90,10 @@ const EntDelivery: FC = () => {
   }
 
   useOn(SOCKET_ENT.ON_DELIVERY, msg => {
+    const response = msg as SocketData;
+    if (response?.from) 
+      setTargetId(response.from);
+    
     setBufferMsg(old => [...old, {
       prefix: '<< 수신 데이터 :\r\n',
       color: 'cyan',
@@ -97,6 +128,27 @@ const EntDelivery: FC = () => {
       setDeviceId(uuid());
     }
   }, [status])
+
+  const clearInterval_ = () => {
+    if (intervalKey === null) return;
+    clearInterval(intervalKey);
+    // setAutoSend(false);
+  }
+
+  useEffect(() => {
+    if (autoSend) {
+      clearInterval_();
+      setIntervalKey(
+        setInterval(() => {
+          if (allowSend.current) submit();
+        }, 1500)
+      )
+    } else {
+      clearInterval_();
+    }
+
+    return clearInterval_
+  }, [autoSend])
 
   useEffect(() => {
     init();
@@ -134,6 +186,12 @@ const EntDelivery: FC = () => {
       </StyledPaper>
       <Button onClick={clearTerminal}>터미널 클리어</Button>
       <Button onClick={sampleJson}>샘플 JSON</Button>
+      <FormControlLabel
+        checked={autoSend}
+        control={<Checkbox size="small" />} 
+        label={<Typography variant="body2">자동 전송</Typography>} 
+        onChange={onAutoSend as never}
+      />
     </StyledEnditor>
   </StyledBox>
 }
