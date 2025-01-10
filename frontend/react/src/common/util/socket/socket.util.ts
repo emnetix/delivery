@@ -98,4 +98,5 @@ export const SOCKET_ENT = {
 };
 
 // export const useSocket = createUseSocket('http://192.168.220.11:8000', { transports: ['websocket'], timeout: 7000, autoConnect: false, path: '/api/v1/ws/ent02delivery'});
-export const useSocket = createUseSocket('wss://delivery.emnetix.net', { transports: ['websocket'], timeout: 7000, autoConnect: false, path: '/api/v1/ws/ent02delivery'});
+// export const useSocket = createUseSocket('wss://delivery.emnetix.net', { transports: ['websocket'], timeout: 7000, autoConnect: false, path: '/api/v1/ws/ent02delivery'});
+export const useSocket = createUseSocket('wss://test-delivery.emnetix.net', { transports: ['websocket'], timeout: 7000, autoConnect: false, path: '/api/v1/ws/ent02delivery'});
