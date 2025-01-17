@@ -50,8 +50,8 @@ const MAX_LOGS = 100
 const MAX_DATA_POINTS = 360
 
 // API 기본 URL 상수 추가
-const API_BASE_URL = 'https://delivery.emnetix.net'
-// const API_BASE_URL = ''
+// const API_BASE_URL = 'https://delivery.emnetix.net'
+const API_BASE_URL = ''
 
 // 로그 데이터 가져오기 함수 수정
 const fetchLogs = async () => {
@@ -99,7 +99,7 @@ const fetchLogs = async () => {
         }
       )
 
-      logTimer = setTimeout(fetchLogs, 100)
+      logTimer = setTimeout(fetchLogs, 1000)
     }
   } catch (error) {
     ElMessage.error('로그 데이터를 가져오는 중 오류가 발생했습니다.')

@@ -1,4 +1,4 @@
 #!/usr/bin/env bash    
 
 echo "build frontend"
-pnpm run build:pro
+VITE_OUT_DIR=../dist-pro pnpm run build:pro

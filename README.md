@@ -67,6 +67,13 @@ npm i # 의존성 설치
 npm run build # OUT -> ../dist-pro
 ```
 
+## vue
+```bash
+cd frontend/vue
+pnpm install
+pnpm install element-plus
+```
+
 
 # 기술
 ## 백엔드

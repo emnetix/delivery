@@ -10,6 +10,7 @@ pycache/
 build/
 develop-eggs/
 dist/
+dist-pro/
 downloads/
 eggs/
 .eggs/

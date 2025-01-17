@@ -151,12 +151,12 @@ const printToTerminal = (
   }
 
   const colorCode = colorCodes[color] || colorCodes.white
-  console.log('[PRINT_TO_TERMINAL]', data);
+  console.log('[PRINT_TO_TERMINAL]', data)
   if (typeof data === 'string') {
     terminal.value?.writeln(`\x1b[${colorCode}m${prefix}${data}\x1b[0m`)
     return
   }
-  console.log('[PRINT_TO_TERMINAL] AFTER STRING');
+  console.log('[PRINT_TO_TERMINAL] AFTER STRING')
 
 
   const hexData = Array.from(data).map((byte) => byte.toString(16).padStart(2, '0').toUpperCase())
@@ -250,7 +250,7 @@ const handleSendJson = () => {
               <ElInput v-model="myId" placeholder="아이디" style="width: 400px">
                 <template #suffix>
                   <ElButton link @click="copyToClipboard">
-                    <Icon icon="ep:document-copy" />
+                    <i class="solar--clipboard-broken"></i>
                   </ElButton>
                 </template>
               </ElInput>
@@ -301,5 +301,19 @@ const handleSendJson = () => {
   background-color: #1e1e1e;
   padding: 8px;
   border-radius: 4px;
+}
+
+.solar--clipboard-broken {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  --svg: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cg fill='none' stroke='%23000' stroke-width='1.5'%3E%3Cpath stroke-linecap='round' d='M21 16c0 2.829 0 4.243-.879 5.122C19.243 22 17.828 22 15 22H9c-2.828 0-4.243 0-5.121-.878C3 20.242 3 18.829 3 16v-3m13-8.998c2.175.012 3.353.109 4.121.877C21 5.758 21 7.172 21 10v2M8 4.002c-2.175.012-3.353.109-4.121.877S3.014 6.825 3.002 9M9 17.5h6'/%3E%3Cpath d='M8 3.5A1.5 1.5 0 0 1 9.5 2h5A1.5 1.5 0 0 1 16 3.5v1A1.5 1.5 0 0 1 14.5 6h-5A1.5 1.5 0 0 1 8 4.5z'/%3E%3Cpath stroke-linecap='round' d='M8 14h1m7 0h-4m5-3.5h-2m-3 0H7'/%3E%3C/g%3E%3C/svg%3E");
+  background-color: currentColor;
+  -webkit-mask-image: var(--svg);
+  mask-image: var(--svg);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
 }
 </style>
