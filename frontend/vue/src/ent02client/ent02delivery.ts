@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { ENT02DeliveryDelivery, ENT02DeliveryError } from './types'
 
-const isProd = process.env.NODE_ENV === 'pro'
+const isProd = process.env.NODE_ENV === 'production'
 const wsProtocol = isProd ? 'wss' : 'ws'
 const socketUrl = `${wsProtocol}://${window.location.host}`
 const socketPath = '/api/v1/ws/ent02delivery'
